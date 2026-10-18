@@ -57,8 +57,8 @@ async function startGogetaBot() {
     sock.ev.on('messages.upsert', async (chatUpdate) => {
         try {
             const mek = chatUpdate.messages[0];
-            if (!mek.message || mek.key.fromMe) return;
-
+            if (!mek.message) return;
+                                              
             const messageType = Object.keys(mek.message)[0];
             let body = '';
 
