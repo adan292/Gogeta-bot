@@ -1,0 +1,14 @@
+{
+  "name": "gogeta-bot",
+  "version": "4.0.0",
+  "description": "Bot de WhatsApp multi-device con vinculación por código de 8 dígitos desarrollado por adánzx7",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
+    "pino": "^10.4.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
