@@ -1,29 +1,21 @@
-let linkRegex = /whatsapp.com|wa.me|whatsapp.com\/channel/i
+const linkRegex = /(chat\.whatsapp\.com\/[0-9A-Za-z]{20,24})|(z?https:\/\/whatsapp\.com\/channel\/[0-9A-Za-z]{20,24})/i
+const allowedLinks = ['https://whatsapp.com/channel/0029Vb64nWqLo4hb8cuxe23n']
 
-let handler = m => m
-handler.before = async function (m, { conn, isAdmin, isBotAdmin, isOwner, isROwner }) {
-if (isAdmin || isOwner || isROwner || m.fromMe) return
-if (m.isBaileys && m.fromMe) return
-if (!m.isGroup) return !1
-let chat = global.db.data.chats[m.chat]
-let delet = m.key.participant
-let bang = m.key.id
-const user = `@${m.sender.split`@`[0]}`
-//const groupAdmins = participants.filter(p => p.admin)
-//const listAdmin = groupAdmins.map((v, i) => `*» ${i + 1}. @${v.id.split('@')[0]}*`).join('\n')
-let bot = global.db.data.settings[this.user.jid] || {}
-const isGroupLink = linkRegex.exec(m.text)
-const linkThisGroup = `https://chat.whatsapp.com/${await this.groupInviteCode(m.chat)}`
-if (chat.antiLink && isGroupLink) {
-if (!isBotAdmin) return m.reply(mid.mAdvertencia + mid.mAdmin)
-if (chat.delete) return m.reply(mid.mAdvertencia + mid.mAntiDelete)   
+export async function before(m, { conn, isAdmin, isBotAdmin, isROwner, participants }) {
+if (!m.isGroup) return
+if (!m || !m.text) return
+const chat = global?.db?.data?.chats[m.chat]
+const isGroupLink = linkRegex.test(m.text)
+const isChannelLink = /whatsapp\.com\/channel\//i.test(m.text)
+const hasAllowedLink = allowedLinks.some(link => m.text.includes(link))
+if (hasAllowedLink) return
+if ((isGroupLink || isChannelLink) && !isAdmin) {
 if (isBotAdmin) {
-if (m.text.includes(linkThisGroup)) return
-await conn.sendMessage(m.chat, { text: `${mid.mAdvertencia + mid.mWhatsApp} *${user}*`, mentions: [m.sender] }, { quoted: m })    
-await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, fromMe: false, id: bang, participant: delet }})
-let remove = await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
-if (remove[0].status === '404') return
-}}
-return !0
+const linkThisGroup = `https://chat.whatsapp.com/${await conn.groupInviteCode(m.chat)}`
+if (isGroupLink && m.text.includes(linkThisGroup)) return !0
 }
-export default handler
+if (chat.antilink && isGroupLink && !isAdmin && !isROwner && isBotAdmin && m.key.participant !== conn.user.jid) {
+await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, fromMe: false, id: m.key.id, participant: m.key.participant }})
+await conn.reply(m.chat, `> ꕥ Se ha eliminado a *${global.db.data.users[m.key.participant].name || 'Usuario'}* del grupo por \`Anti-Link\`, no permitimos enlaces de *${isChannelLink ? 'canales' : 'otros grupos'}*.`, null)
+await conn.groupParticipantsUpdate(m.chat, [m.key.participant], 'remove')
+}}}

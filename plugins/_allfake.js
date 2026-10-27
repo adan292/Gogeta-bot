@@ -1,7 +1,4 @@
-//ESTOS DISEÑOS PARA MENSAJES SON COMPATIBLES CON GATABOT, SIN EMBARGO ALGUNOS NO SE VEN EN LA VERSIÓN DE WHATSAPP WEB
-//PERO EN EL CELULAR SI SE NOTA TODOS, PUEDES USAR EL QUE QUIERAS 😼
-//import { generateWAMessageFromContent } from "@adiwajshing/baileys"
-let pkg = (await import(global.baileys)).default
+import pkg from '@whiskeysockets/baileys'
 import fs from 'fs'
 import fetch from 'node-fetch'
 import axios from 'axios'
@@ -9,29 +6,10 @@ import moment from 'moment-timezone'
 const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = pkg
 
 var handler = m => m
-handler.all = async function (m) {
-
-global.getBuffer = async function getBuffer(url, options) {
-try {
-options ? options : {}
-var res = await axios({
-method: "get",
-url,
-headers: {
-'DNT': 1,
-'User-Agent': 'GoogleBot',
-'Upgrade-Insecure-Request': 1
-},
-...options,
-responseType: 'arraybuffer'
-})
-return res.data
-} catch (e) {
-console.log(`Error : ${e}`)
-}}
-
-let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? this.user.jid : m.sender
-//let pp = await this.profilePictureUrl(who, 'image').catch(_ => 'https://telegra.ph/file/1861aab98389b13db8588.jpg')
+handler.all = async function (m) { 
+global.canalIdM = ["120363198641161536@newsletter", "120363198641161536@newsletter"]
+global.canalNombreM = ["❀𝚂𝚘𝚙𝚑𝚒𝚊 𝚆𝙰 𝙱𝙾𝚃 - 𝙾𝚏𝚏𝚒𝚌𝚒𝚊𝚕 𝙲𝚑𝚊𝚗𝚗𝚎𝚕❀", "❀𝚂𝚘𝚙𝚑𝚒𝚊 𝚆𝙰 𝙱𝙾𝚃 - 𝙾𝚏𝚏𝚒𝚌𝚒𝚊𝚕 𝙲𝚑𝚊𝚗𝚗𝚎𝚕❀"]
+global.channelRD = await getRandomChannel()
 
 global.d = new Date(new Date + 3600000)
 global.locale = 'es'
@@ -41,8 +19,30 @@ global.mes = d.toLocaleDateString('es', {month: 'long'})
 global.año = d.toLocaleDateString('es', {year: 'numeric'})
 global.tiempo = d.toLocaleString('en-US', {hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true})
 
-global.nombre = conn.getName(m.sender)
-global.taguser = '@' + m.sender.split("@s.whatsapp.net")
+var canal = 'https://whatsapp.com/channel/0029VaAN15BJP21BYCJ3tH04'  
+var comunidad = 'https://whatsapp.com/channel/0029VaAN15BJP21BYCJ3tH04'
+var git = 'https://github.com/Alba070503'
+var github = 'https://github.com/Alba070503/YotsubaBot-MD' 
+var correo = 'alba070503yt@gmail.com'
+global.redes = [canal, comunidad, git, github, correo].getRandom()
+
+global.nombre = m.pushName || 'Anónimo'
+global.packsticker = `°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°\nᰔᩚ Usuario: ${nombre}\n❀ Bot: ${botname}\n✦ Fecha: ${fecha}\nⴵ Hora: ${moment.tz('America/Caracas').format('HH:mm:ss')}`
+global.packsticker2 = `\n°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°\n\n${dev}`
+  
+global.fkontak = { key: { participants:"0@s.whatsapp.net", "remoteJid": "status@broadcast", "fromMe": false, "id": "Halo" }, "message": { "contactMessage": { "vcard": `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` }}, "participant": "0@s.whatsapp.net" }
+global.rcanal = { contextInfo: { isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: channelRD.id, serverMessageId: '', newsletterName: channelRD.name }, externalAdReply: { title: botname, body: dev, mediaUrl: null, description: null, previewType: "PHOTO", thumbnail: await (await fetch(icono)).buffer(), sourceUrl: redes, mediaType: 1, renderLargerThumbnail: false }, mentionedJid: null }}
 }
 
 export default handler
+
+function pickRandom(list) {
+return list[Math.floor(Math.random() * list.length)]
+}
+
+async function getRandomChannel() {
+let randomIndex = Math.floor(Math.random() * canalIdM.length)
+let id = canalIdM[randomIndex]
+let name = canalNombreM[randomIndex]
+return { id, name }
+}

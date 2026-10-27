@@ -1,54 +1,69 @@
-//CÓDIGO CREADO POR elrebelde21 : https://github.com/elrebelde21
-let crime = 500
-let diamante = 10
-const handler = async (m, {conn, usedPrefix, command, groupMetadata, participants, isPrems}) => {
-const date = global.db.data.users[m.sender].crime + 3600000; //3600000 = 1 hs
-if (new Date - global.db.data.users[m.sender].crime < 3600000) return m.reply(`『🚓︎』𝙇𝘼 𝙋𝙊𝙇𝙄𝘾𝙄𝘼 𝙀𝙎𝙏𝘼 𝙑𝙄𝙂𝙄𝙇𝘼𝙉𝘿𝙊 𝙀𝙉 𝙀𝙎𝙏𝙀 𝙈𝙊𝙈𝙀𝙉𝙏𝙊, 𝙑𝙐𝙀𝙇𝙑𝙀 𝙀𝙉 : ${msToTime(date - new Date())}`)
-let randow
-if (m.isGroup) randow = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : false
-else randow = m.chat
-try {
-let ps = groupMetadata.participants.map(v => v.id)
-let randow = ps.getRandom()
-let users = global.db.data.users[randow]
-const exp = Math.floor(Math.random() * 9000)
-const diamond = Math.floor(Math.random() * 150)
-const money = Math.floor(Math.random() * 9000)
-
-if (global.db.data.users[m.sender].exp < 0) return m.reply(`《💰》${pickRandom(global.robar)} ${exp} XP`).catch(global.db.data.users[m.sender].exp += exp)
-if (global.db.data.users[m.sender].limit < 0) return m.reply(`《💰》${pickRandom(global.robar)} ${diamond} 💎 Diamante`).catch(global.db.data.users[m.sender].limit += diamond)
-if (global.db.data.users[m.sender].money < 0) return m.reply(`《💰》${pickRandom(global.robar)} ${money} 🪙 GataCoins`).catch(global.db.data.users[m.sender].money += money) 
-  
-let or = ['text', 'text2', 'text3', 'text4', 'text5']; 
-let media = or[Math.floor(Math.random() * 5)]
-global.db.data.users[m.sender].crime = new Date * 1;
-if (media === 'text') return m.reply(`《💰》${pickRandom(global.robar)} ${exp} XP`).catch(global.db.data.users[m.sender].exp += exp) 
-if (media === 'text2') return m.reply(`《🚓》${pickRandom(global.robmal)} ${exp} XP`).catch(global.db.data.users[m.sender].exp -= exp) 
-if (media === 'text3') return m.reply(`《💰》${pickRandom(global.robar)}\n\n${diamond} 💎 𝐃𝐈𝐀𝐌𝐀𝐍𝐓𝐄\n${money} 🐈 𝐆𝐀𝐓𝐀𝐂𝐎𝐈𝐍𝐒`).catch(global.db.data.users[m.sender].limit += diamond).catch(global.db.data.users[m.sender].money += money)
-if (media === 'text4') return m.reply(`《🚓》${pickRandom(global.robmal)}\n\n${diamond} 💎 𝐃𝐈𝐀𝐌𝐀𝐍𝐓𝐄\n${money} 🐈 𝐆𝐀𝐓𝐀𝐂𝐎𝐈𝐍𝐒`).catch(global.db.data.users[m.sender].limit -= diamond).catch(global.db.data.users[m.sender].money -= money)
-if (media === 'text5') return conn.reply(m.chat, `《💰》Le has robado a @${randow.split`@`[0]} una cantidad de ${exp} XP`, m, {contextInfo: {mentionedJid: [randow]}}).catch(global.db.data.users[m.sender].exp += exp).catch(global.db.data.users[randow].exp -= crime) 
-} catch (e) {
-console.log(e)}}
-handler.help = ['robar'];
-handler.tags = ['xp'];
-handler.command = /^(crime|Crime)$/i
-handler.register = true
-handler.group = true
-export default handler;
-
-function msToTime(duration) {
-var milliseconds = parseInt((duration % 1000) / 100),
-seconds = Math.floor((duration / 1000) % 60),
-minutes = Math.floor((duration / (1000 * 60)) % 60),
-hours = Math.floor((duration / (1000 * 60 * 60)) % 24)
-hours = (hours < 10) ? "0" + hours : hours
-minutes = (minutes < 10) ? "0" + minutes : minutes
-seconds = (seconds < 10) ? "0" + seconds : seconds
-return hours + " Hora(s) " + minutes + " Minuto(s)"}
-
-function pickRandom(list) {
-  return list[Math.floor(list.length * Math.random())];
+let handler = async (m, { conn, usedPrefix, command }) => {
+if (!db.data.chats[m.chat].economy && m.isGroup) {
+return m.reply(`《✦》Los comandos de *Economía* están desactivados en este grupo.\n\nUn *administrador* puede activarlos con el comando:\n» *${usedPrefix}economy on*`)
+}
+let user = global.db.data.users[m.sender]
+user.lastcrime = user.lastcrime || 0
+user.coin = user.coin || 0
+const cooldown = 8 * 60 * 1000
+const ahora = Date.now()
+if (ahora < user.lastcrime) {
+const restante = user.lastcrime - ahora
+const wait = formatTimeMs(restante)
+return conn.reply(m.chat, `ꕥ Debes esperar *${wait}* para usar *${usedPrefix + command}* de nuevo.`, m)
+}
+user.lastcrime = ahora + cooldown
+const evento = pickRandom(crimen)
+let cantidad
+if (evento.tipo === 'victoria') {
+cantidad = Math.floor(Math.random() * 1501) + 6000
+user.coin += cantidad
+} else {
+cantidad = Math.floor(Math.random() * 1501) + 4000
+user.coin -= cantidad
+if (user.coin < 0) user.coin = 0
+}
+await conn.reply(m.chat, `❀ ${evento.mensaje} *¥${cantidad.toLocaleString()} ${currency}*`, m)
 }
 
-global.robar = ['Robaste un Banco 🏦 y Obtuviste', 'Negociarte con el jefe de la mafia y Obtuviste :', 'Casi te atrapa la policía pero lograste robar una cantidad valiosa de 💰. !Te cuidado la próxima vez! Obtuviste:', 'Los mafiosos te han pagado :', 'Le has robado al Administrador del Grupo', 'Le robarte a tu presidente una sumar de :', 'le robarte a un famoso un valor de :', 'Entraste sigilosamente en el museo y robaste una obra de arte valiosa:', 'Infiltraste una joyería y obtuviste un botín impresionante:', 'Te convertiste en el ladrón más buscado del país, obtuviste:', 'Robaste un camión lleno de productos valiosos y obtuviste', 'Asaltaste un tren y conseguiste', 'Robaste un avión cargado de mercancía y obtuviste', 'Te hiciste pasar por un millonario para robar una joya única, obtuviste', 'Entraste a la casa de un coleccionista de arte y robaste una pieza invaluable, obtuviste', 'Secuestraste a un empresario y conseguiste un rescate importante:', 'Amenazaste a un político y obtuviste una gran suma de dinero:', 'Sobornaste a un oficial de policía para obtener información valiosa, conseguiste'];
-global.robmal = ['LA POLICIA TE VIO 🙀👮‍♂️ PERDISTE', 'Fuiste a robar un banco 🏦 y tu ayudarte que vendio a la policía, perdiste', 'No pudiste escapar de la Policía 🚔🤡, perdiste :', 'Intentaste robar un casino pero te descubrieron, perdiste', 'Te atraparon tratando de robar una tienda, perdiste :', 'La alarma sonó cuando intentabas robar un almacén, perdiste', 'El dueño del lugar te atrapó in fraganti, perdiste', 'Intentaste hackear una cuenta bancaria pero te rastrearon, perdiste', 'Fuiste descubierto tratando de sobornar a un oficial, perdiste', 'Tu plan para chantajear a un empresario salió mal, perdiste']
+handler.tags = ['economy']
+handler.help = ['crimen']
+handler.command = ['crimen', 'crime']
+handler.group = true
+
+export default handler
+
+function formatTimeMs(ms) {
+const totalSec = Math.ceil(ms / 1000)
+const min = Math.floor(totalSec / 60)
+const sec = totalSec % 60
+const partes = []
+if (min) partes.push(`${min} minuto${min !== 1 ? 's' : ''}`)
+partes.push(`${sec} segundo${sec !== 1 ? 's' : ''}`)
+return partes.join(' ')
+}
+function pickRandom(list) {
+return list[Math.floor(Math.random() * list.length)]
+}
+const crimen = [
+{ tipo: 'victoria', mensaje: "Hackeaste un cajero automático usando un exploit del sistema y retiraste efectivo sin alertas, ganaste." },
+{ tipo: 'victoria', mensaje: "Te infiltraste como técnico en una mansión y robaste joyas mientras inspeccionabas la red, ganaste." },
+{ tipo: 'victoria', mensaje: "Simulaste una transferencia bancaria falsa y obtuviste fondos antes de que cancelaran la operación, ganaste." },
+{ tipo: 'victoria', mensaje: "Interceptaste un paquete de lujo en una recepción corporativa y lo revendiste, ganaste." },
+{ tipo: 'victoria', mensaje: "Vaciaste una cartera olvidada en un restaurante sin que nadie lo notara, ganaste." },
+{ tipo: 'victoria', mensaje: "Accediste al servidor de una tienda digital y aplicaste descuentos fraudulentos para obtener productos gratis, ganaste." },
+{ tipo: 'victoria', mensaje: "Te hiciste pasar por repartidor y sustrajiste un paquete de colección sin levantar sospechas, ganaste." },
+{ tipo: 'victoria', mensaje: "Copiaste la llave maestra de una galería de arte y vendiste una escultura sin registro, ganaste." },
+{ tipo: 'victoria', mensaje: "Creaste un sitio falso de caridad y lograste que cientos de personas donaran, ganaste." },
+{ tipo: 'victoria', mensaje: "Manipulaste un lector de tarjetas en una tienda local y vaciaste cuentas privadas, ganaste." },
+{ tipo: 'victoria', mensaje: "Falsificaste entradas VIP para un evento y accediste a un área con objetos exclusivos, ganaste." },
+{ tipo: 'victoria', mensaje: "Engañaste a un coleccionista vendiéndole una réplica como pieza original, ganaste." },
+{ tipo: 'victoria', mensaje: "Capturaste la contraseña de un empresario en un café y transferiste fondos a tu cuenta, ganaste." },
+{ tipo: 'victoria', mensaje: "Convenciste a un anciano de participar en una inversión falsa y retiraste sus ahorros, ganaste." },
+{ tipo: 'derrota', mensaje: "Intentaste vender un reloj falso, pero el comprador notó el engaño y te denunció, perdiste." },
+{ tipo: 'derrota', mensaje: "Hackeaste una cuenta bancaria, pero olvidaste ocultar tu IP y fuiste rastreado, perdiste." },
+{ tipo: 'derrota', mensaje: "Robaste una mochila en un evento, pero una cámara oculta capturó todo el acto, perdiste." },
+{ tipo: 'derrota', mensaje: "Te infiltraste en una tienda de lujo, pero el sistema silencioso activó la alarma, perdiste." },
+{ tipo: 'derrota', mensaje: "Simulaste ser técnico en una mansión, pero el dueño te reconoció y llamó a seguridad, perdiste." },
+{ tipo: 'derrota', mensaje: "Intentaste vender documentos secretos, pero eran falsos y nadie quiso comprarlos, perdiste." }
+]

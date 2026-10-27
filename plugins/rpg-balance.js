@@ -1,31 +1,29 @@
-let handler = async (m, {usedPrefix}) => {	
-let who
-if (m.isGroup) who = m.mentionedJid[0] ? m.mentionedJid[0] : m.sender
-else who = m.sender
-let name = conn.getName(who) 
-let d = `╭━〔 🔖 *BALANCE* 〕━⬣
-┃ *USUARIO(A) | USER*
-┃ ${name}
-┃┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-┃ *${global.db.data.users[who].limit} Diamantes* 💎
-╰━━━━〔 *𓃠 ${vs}* 〕━━━⬣\n
-*COMPRAR DIAMANTES CON EXP*
-${usedPrefix}buy *cantidad*
-${usedPrefix}buyall *cantidad*
-
-*COMPRAR DIAMANTES CON GATACOINS*
-${usedPrefix}buy2 *cantidad*
-${usedPrefix}buyall2 *cantidad*`
-conn.sendButton(m.chat, d, wm, null, [
-['𝙈𝙚𝙣𝙪 𝙋𝙧𝙞𝙣𝙘𝙞𝙥𝙖𝙡 | 𝙈𝙖𝙞𝙣 𝙢𝙚𝙣𝙪 ⚡', '#menu'],
-['𝙈𝙚𝙣𝙪́ 𝙘𝙤𝙢𝙥𝙡𝙚𝙩𝙤 | 𝙁𝙪𝙡𝙡 𝙈𝙚𝙣𝙪 💫', '.allmenu']
-], null, null, m)
-/*await conn.sendHydrated(m.chat, d, wm, null, md, '𝙂𝙖𝙩𝙖𝘽𝙤𝙩-𝙈𝘿', null, null, [
-['𝙈𝙚𝙣𝙪 𝙋𝙧𝙞𝙣𝙘𝙞𝙥𝙖𝙡 | 𝙈𝙖𝙞𝙣 𝙢𝙚𝙣𝙪 ⚡', '#menu'],
-['𝙈𝙚𝙣𝙪́ 𝙘𝙤𝙢𝙥𝙡𝙚𝙩𝙤 | 𝙁𝙪𝙡𝙡 𝙈𝙚𝙣𝙪 💫', '.allmenu']
-], m,)*/
+let handler = async (m, { conn, usedPrefix }) => {
+if (!db.data.chats[m.chat].economy && m.isGroup) {
+return m.reply(`《✦》Los comandos de *Economía* están desactivados en este grupo.\n\nUn *administrador* puede activarlos con el comando:\n» *${usedPrefix}economy on*`)
 }
+let mentionedJid = await m.mentionedJid
+let who = mentionedJid[0] ? mentionedJid[0] : m.quoted ? await m.quoted.sender : m.sender
+let name = await (async () => global.db.data.users[who].name || (async () => { try { const n = await conn.getName(who); return typeof n === 'string' && n.trim() ? n : who.split('@')[0] } catch { return who.split('@')[0] } })())()
+if (!(who in global.db.data.users)) return m.reply(`ꕥ El usuario no se encuentra en mi base de datos.`)
+let user = global.db.data.users[who]
+let coin = user.coin || 0
+let bank = user.bank || 0
+let total = (user.coin || 0) + (user.bank || 0)
+const texto = `ᥫ᭡ Informacion -  Balance ❀
+ 
+ᰔᩚ Usuario » *${name}*   
+⛀ Cartera » *¥${coin.toLocaleString()} ${currency}*
+⚿ Banco » *¥${bank.toLocaleString()} ${currency}*
+⛁ Total » *¥${total.toLocaleString()} ${currency}*
+
+> *Para proteger tu dinero, ¡depósitalo en el banco usando #deposit!*`
+await conn.reply(m.chat, texto, m)
+}
+
 handler.help = ['bal']
-handler.tags = ['xp']
-handler.command = ['bal', 'diamantes', 'diamond', 'balance'] 
+handler.tags = ['rpg']
+handler.command = ['bal', 'balance', 'bank'] 
+handler.group = true 
+
 export default handler

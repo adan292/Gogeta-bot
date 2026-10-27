@@ -1,71 +1,49 @@
-import fetch from 'node-fetch'
-let handler = async (m, { isPrems, conn }) => {
+var handler = async (m, { conn, usedPrefix }) => {
+if (!db.data.chats[m.chat].economy && m.isGroup) return m.reply(`《✦》Los comandos de *Economía* están desactivados en este grupo.\n\nUn *administrador* puede activarlos con el comando:\n» *${usedPrefix}economy on*`)
 let user = global.db.data.users[m.sender]
-let premium = user.premium
-
-let exp = `${pickRandom([1000, 1800, 2500, 3000, 3700, 4400, 5000, 5500, 6000, 6500])}` * 1
-let exppremium = `${pickRandom([3000, 4500, 6600, 8500, 9999, 10500, 11600, 12650, 13479, 15000])}` * 1
-
-let diamond = `${pickRandom([3, 5, 8, 9, 11, 13, 16, 18, 19, 20])}` * 1
-let diamondpremium = `${pickRandom([8, 14, 18, 22, 27, 29, 33, 36, 38, 40])}` * 1
-
-let kyubi = `${pickRandom([5, 8, 15, 16, 25, 28, 30])}` * 1
-let kyubipremium = `${pickRandom([12, 19, 25, 34, 44, 50])}` * 1
-
-let sampah = `${pickRandom([3, 3, 5, 7, 9, 14, 15])}` * 1
-let sampahpremium = `${pickRandom([5, 8, 16, 21, 25, 30])}` * 1
-
-let sword = `${pickRandom([1, 1, 2, 2, 1])}` * 1
-let swordpremium = `${pickRandom([2, 3, 3, 5, 8])}` * 1
-
-let uncoommon = `${pickRandom([2, 2, 2, 3, 3, 3, 4, 4, 4, 5])}` * 1
-let uncoommonpremium = `${pickRandom([5, 5, 5, 5, 5, 7, 7, 9, 9, 10])}` * 1
-
-let mythic = `${pickRandom([2, 2, 2, 1, 2, 1, 1, 2, 1, 3])}` * 1
-let mythicpremium = `${pickRandom([2, 2, 3, 3, 3, 3, 4, 4, 4, 3])}` * 1
- 
-const recompensas = {
-  exp: premium ? exppremium : exp,
-  diamond: premium ? diamondpremium : diamond,
-  kyubi: premium ? kyubipremium : kyubi,
-  sampah: premium ? sampahpremium : sampah,
-  sword: premium ? swordpremium : sword,
-  uncoommon: premium ? uncoommonpremium : uncoommon,
-  mythic: premium ? mythicpremium : mythic,
+const gap = 604800000
+const now = Date.now()
+user.weeklyStreak = user.weeklyStreak || 0
+user.lastWeeklyGlobal = user.lastWeeklyGlobal || 0
+user.coin = user.coin || 0
+user.exp = user.exp || 0
+user.lastweekly = user.lastweekly || 0
+if (now < user.lastweekly) {
+const wait = formatTime(Math.floor((user.lastweekly - now) / 1000))
+return conn.reply(m.chat, `ꕥ Ya has reclamado tu recompensa semanal.\n> Puedes reclamarlo de nuevo en *${wait}*`, m)
+}
+const lost = user.weeklyStreak >= 1 && now - user.lastWeeklyGlobal > gap * 1.5
+if (lost) user.weeklyStreak = 0
+const canClaimWeeklyGlobal = now - user.lastWeeklyGlobal >= gap
+if (canClaimWeeklyGlobal) {
+user.weeklyStreak = Math.min(user.weeklyStreak + 1, 30)
+user.lastWeeklyGlobal = now
+}
+const coins = Math.min(40000 + (user.weeklyStreak - 1) * 5000, 185000)
+const expRandom = Math.floor(Math.random() * (200 - 50 + 1)) + 50
+user.coin += coins
+user.exp += expRandom
+user.lastweekly = now + gap
+let nextReward = Math.min(40000 + user.weeklyStreak * 5000, 185000).toLocaleString()
+let msg = `> Semana *${user.weeklyStreak + 1}* » *+¥${nextReward}*`
+if (lost) msg += `\n> ☆ ¡Has perdido tu racha de semanas!`
+conn.reply(m.chat, `「❁」 Has reclamado tu recompensa semanal de *¥${coins.toLocaleString()} ${currency}* (Semana *${user.weeklyStreak}*)\n${msg}`, m)
 }
 
-let time = user.lastweekly + 259200000 //259200000 3 dias
-if (new Date - user.lastweekly < 259200000) return await conn.reply(m.chat, `𝙔𝘼 𝙍𝙀𝘾𝙄𝘽𝙄𝙎𝙏𝙀 𝙏𝙐 𝙍𝙀𝘾𝙊𝙈𝙋𝙀𝙉𝙎𝘼 𝙎𝙀𝙈𝘼𝙉𝘼𝙇 ⛅\n\n𝙔𝙊𝙐 𝘼𝙇𝙍𝙀𝘼𝘿𝙔 𝙍𝙀𝘾𝙀𝙄𝙑𝙀𝘿 𝙔𝙊𝙐𝙍 𝙒𝙀𝙀𝙆𝙇𝙔 𝙍𝙀𝙒𝘼𝙍𝘿 ⛅\n\n𝙑𝙐𝙀𝙇𝙑𝙀 𝙀𝙉 : 𝘾𝙊𝙈𝙀 𝘽𝘼𝘾𝙆 𝙄𝙉\n${clockString(time - new Date() * 1)}`, fkontak,  m)
-//await conn.sendButton(m.chat, `𝙔𝘼 𝙍𝙀𝘾𝙄𝘽𝙄𝙎𝙏𝙀 𝙏𝙐 𝙍𝙀𝘾𝙊𝙈𝙋𝙀𝙉𝙎𝘼 𝙎𝙀𝙈𝘼𝙉𝘼𝙇 ⛅\n\n𝙔𝙊𝙐 𝘼𝙇𝙍𝙀𝘼𝘿𝙔 𝙍𝙀𝘾𝙀𝙄𝙑𝙀𝘿 𝙔𝙊𝙐𝙍 𝙒𝙀𝙀𝙆𝙇𝙔 𝙍𝙀𝙒𝘼𝙍𝘿 ⛅`, wm + `\n\n𝙑𝙐𝙀𝙇𝙑𝙀 𝙀𝙉 : 𝘾𝙊𝙈𝙀 𝘽𝘼𝘾𝙆 𝙄𝙉\n${clockString(time - new Date() * 1)}`, null, [['𝗠 𝗘 𝗡 𝗨 ☘️', '/menu']], fkontak, m)
-let texto = ''
-for (let reward of Object.keys(recompensas)) {
-    if (!(reward in user)) continue
-    user[reward] += recompensas[reward]
-texto += `*+${recompensas[reward]}* ${global.rpgshop.emoticon(reward)}\n┃ `}
-let text = `╭━━⛅━☃️━⛈️━━⬣
-┃ ☀️ 𝙍𝙀𝘾𝙊𝙈𝙋𝙀𝙉𝙎𝘼 𝙎𝙀𝙈𝘼𝙉𝘼𝙇!!
-┃ 🌕 𝙒𝙀𝙀𝙆𝙇𝙔 𝙍𝙀𝙒𝘼𝙍𝘿!!
-┃ *${premium ? '🎟️ Recompensa Premium' : '🆓 Recompensa Gratis'}*
-┃ ${texto}
-╰━━💫━🌈━🌛━━⬣\n\n🎟️ 𝗣 𝗥 𝗘 𝗠 𝗜 𝗨 𝗠 ⇢ ${premium ? '✅' : '❌'}\n${wm}`
-let pp = 'https://telegra.ph/file/aea15921a50814cf331ae.jpg'
-conn.sendMessage(m.chat, {image: {url: pp}, caption: text, mentions: conn.parseMention(text)}, {quoted: fkontak, ephemeralExpiration: 24*60*100, disappearingMessagesInChat: 24*60*100})
-//await conn.sendButton(m.chat, text, texto + `\n\n🎟️ 𝗣 𝗥 𝗘 𝗠 𝗜 𝗨 𝗠 ⇢ ${premium ? '✅' : '❌'}\n${wm}`, gata.getRandom(), [['🌅 𝙀𝙉𝙏𝙍𝙀𝙂𝘼 𝘿𝙀𝙇 𝙈𝙀𝙎 | 𝙈𝙊𝙉𝙏𝙃 🌠', '/monthly'], ['𝙑𝙤𝙡𝙫𝙚𝙧 𝙖𝙡 𝙈𝙚𝙣𝙪́ | 𝘽𝙖𝙘𝙠 𝙩𝙤 𝙈𝙚𝙣𝙪 ☘️', '/menu']], m, enlace)  
-user.lastweekly = new Date * 1
-}
-handler.command = ['weekly', 'semana', 'semanal', 'cadasemana', 'entregasemanal'] 
-handler.level = 7
+handler.help = ['weekly', 'semanal']
+handler.tags = ['rpg']
+handler.command = ['weekly', 'semanal']
+handler.group = true
+
 export default handler
 
-function pickRandom(list) {
-return list[Math.floor(Math.random() * list.length)]}
-
-function clockString(ms) {
-  let ye = isNaN(ms) ? '--' : Math.floor(ms / 31104000000) % 10
-  let mo = isNaN(ms) ? '--' : Math.floor(ms / 2592000000) % 12
-  let d = isNaN(ms) ? '--' : Math.floor(ms / 86400000) % 30
-  let h = isNaN(ms) ? '--' : Math.floor(ms / 3600000) % 24
-  let m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60
-  let s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60
-  return ['┃⇢ ', ye, ' *🗓️ Años : Year*\n', '┃⇢ ', mo, ' *⛅ Mes : Month*\n', '┃⇢ ', d, ' *☀️ Días : Days*\n', '┃⇢ ', h, ' *⏰ Horas : Hours*\n', '┃⇢ ', m, ' *🕐 Minutos : Minutes*\n', '┃⇢ ', s, ' *⏱️ Segundos : Seconds*'].map(v => v.toString().padStart(2, 0)).join('')
+function formatTime(t) {
+const d = Math.floor(t / 86400)
+const h = Math.floor((t % 86400) / 3600)
+const m = Math.floor((t % 3600) / 60)
+const s = t % 60
+if (d) return `${d} día${d !== 1 ? 's' : ''} ${h} hora${h !== 1 ? 's' : ''} ${m} minuto${m !== 1 ? 's' : ''}`
+if (h) return `${h} hora${h !== 1 ? 's' : ''} ${m} minuto${m !== 1 ? 's' : ''} ${s} segundo${s !== 1 ? 's' : ''}`
+if (m) return `${m} minuto${m !== 1 ? 's' : ''} ${s} segundo${s !== 1 ? 's' : ''}`
+return `${s} segundo${s !== 1 ? 's' : ''}`
 }
